@@ -1,15 +1,6 @@
 # twilio-voicejs
 App for twilio-client.js.
 
-## Environment Variables
-For generating access tokens and TURN credentials. Make sure your account is allowed to use Network Traversal Service APIs
-
-```
-export ACCOUNT_SID=********************
-export AUTH_TOKEN=********************
-export API_KEY=********************
-export API_SECRET=********************
-```
 
 ## SDK Url
 You can specify ClientJS sdk url using the following query string. If not provided, default files will be use under the public folder.

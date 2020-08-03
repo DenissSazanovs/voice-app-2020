@@ -5,6 +5,63 @@
       this.tokenUrl = tokenUrl;
       this.defaultNumberToCall = defaultNumberToCall;
     }
+  
+    async setupDevice(onReady) {
+      this.log('INFO', 'Setting up device');
+      const data = await Util.getJson(this.tokenUrl);
+      this.identity = data.identity;
+    
+      //Setup Device
+      
+      this.setIdentityUI();
+      this.setupHandlers(onReady);
+    }
+  
+    showHideButtons(buttonsToShow) {
+      if (!Array.isArray(buttonsToShow)) {
+        buttonsToShow = [buttonsToShow];
+      }
+      const buttonsToShowHash = {};
+      buttonsToShow.forEach((name) => {
+        buttonsToShowHash[name] = true;
+      });
+      this.buttonData.forEach((data) => {
+        if (buttonsToShowHash[data.value]) {
+          data.el.style.display = 'inline-block';
+        } else {
+          data.el.style.display = 'none';
+        }
+      });
+    }
+  
+    //Set device handlers
+    
+    //Set connection handlers
+    
+    //Set on button click handlers
+    
+    log(type, msg) {
+      const log = `${type}: ${msg}`;
+      const p = document.createElement('p');
+      p.innerText = log;
+    
+      console.log(log);
+    
+      this.logEl.appendChild(p);
+    
+      this.logEl.scrollTop = this.logEl.scrollHeight;
+    }
+  
+    setIdentityUI() {
+      const div = document.createElement('div');
+      div.classList.add('label');
+      div.innerText = 'Identity: ' + this.identity;
+      this.deviceEl.prepend(div);
+    }
+  
+    setCallSidUI(connection) {
+      this.callSidEl.innerText = 'Call SID: ' + connection.mediaStream.callSid;
+    }
     
     render() {
       this.deviceEl = document.createElement('div');
