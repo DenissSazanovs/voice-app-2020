@@ -11,10 +11,76 @@
       const data = await Util.getJson(this.tokenUrl);
       this.identity = data.identity;
     
-      //Setup Device
+      this.device = new Twilio.Device(data.token, {
+        debug: true,
+        region: 'de1',
+        closeProtection: true
+      });
       
       this.setIdentityUI();
       this.setupHandlers(onReady);
+    }
+    
+    setupHandlers(){
+      this.device.on('ready', () => {
+        this.log('INFO', 'Device operational');
+        this.showHideButtons(['Call']); //this.showHideButtons(['Call']);
+      });
+      
+      this.device.on('connect', () => {
+        this.log('INFO', 'Device connect');
+      });
+  
+      this.device.on('disconnect', () => {
+        this.log('INFO', 'Device disconnected');
+      });
+  
+      this.device.on('offline', () => {
+        this.log('INFO', 'Device offline');
+      });
+  
+      this.device.on('cancel', () => {
+        this.log('INFO', 'Call canceled');
+      });
+  
+      this.device.on('error', (error) => {
+        this.log('ERROR', `${error.message} - ${error.code}`); //error.message + '-' + error.code
+      });
+      
+      this.device.on('incoming', (connection) => {
+        this.log('INFO', `Incoming connection from - ${connection.parameters.From}`);
+        this.connection = connection;
+        this.setupConnectionHandlers(connection);
+        this.showHideButtons(['Accept', 'Reject', 'Ignore']);
+      });
+    }
+    
+    setupConnectionHandlers(connection){
+      connection.on('accept', () => {
+        this.log('INFO', 'Connection accepted')
+      });
+  
+      connection.on('cancel', () => {
+        this.showHideButtons(['Call']);
+        this.log('INFO', 'Connection canceled')
+      });
+  
+      connection.on('reconnecting', () => {
+        this.log('INFO', 'Reconnecting')
+      });
+  
+      connection.on('reconnected', () => {
+        this.log('INFO', 'Reconnected back to call')
+      });
+  
+      connection.on('disconnect', () => {
+        this.showHideButtons(['Call']);
+        this.log('INFO', 'Disconnected from the call')
+      });
+      
+      connection.on('error', (error) => {
+        this.log('ERROR', `${error.message} - ${error.code}`)
+      });
     }
   
     showHideButtons(buttonsToShow) {
@@ -33,10 +99,39 @@
         }
       });
     }
-  
-    //Set device handlers
     
-    //Set connection handlers
+    onCallClick(){
+      this.showHideButtons(['Hangup']);
+      this.log('INFO', 'Calling another client');
+      this.connect = this.device.connect({
+          To: this.numberEl.value,
+          CallerId: '+12057820293'
+      });
+      this.setupConnectionHandlers(this.connect);
+    };
+    
+    onHangupClick(){
+      this.log('INFO', 'Hanging up the call');
+      this.device.disconnectAll();
+    }
+    
+    onAcceptClick(){
+      this.log('INFO', 'Accepting conenction');
+      this.connection.accept();
+      this.showHideButtons(['Hangup']);
+    }
+  
+    onRejectClick(){
+      this.log('INFO', 'Rejecting conenction');
+      this.connection.reject();
+      this.showHideButtons(['Call']);
+    }
+  
+    onIgnoreClick(){
+      this.log('INFO', 'Ignoring conenction');
+      this.connection.ignore();
+      this.showHideButtons(['Call']);
+    }
     
     //Set on button click handlers
     
